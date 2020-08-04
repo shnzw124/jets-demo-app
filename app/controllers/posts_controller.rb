@@ -3,7 +3,7 @@ class PostsController < ApplicationController
 
   # GET /posts
   def index
-    @posts = Post.all
+    @posts = Post.scan # all => scan に変更
   end
 
   # GET /posts/1
@@ -23,11 +23,11 @@ class PostsController < ApplicationController
   def create
     @post = Post.new(post_params)
 
-    if @post.save
+    if @post.replace # create => replace に変更
       if request.xhr?
-        render json: {success: true, location: url_for(@post)}
+        render json: {success: true, location: url_for("/posts/#{@post.id}")}
       else
-        redirect_to post_path(@post)
+        redirect_to "/posts/#{@post.id}"
       end
     else
       render :new
@@ -36,11 +36,11 @@ class PostsController < ApplicationController
 
   # PUT /posts/1
   def update
-    if @post.update(post_params)
+    if @post.replace(post_params) # update => replace に変更
       if request.xhr?
-        render json: {success: true, location: url_for(@post)}
+        render json: {success: true, location: url_for("/posts/#{@post.id}")}
       else
-        redirect_to post_path(@post)
+        redirect_to "/posts/#{@post.id}"
       end
     else
       render :edit
@@ -49,21 +49,21 @@ class PostsController < ApplicationController
 
   # DELETE /posts/1
   def delete
-    @post.destroy
+    Post.delete(@post.id) # destroy => delete に変更
     if request.xhr?
       render json: {success: true}
     else
-      redirect_to posts_path
+      redirect_to "/posts"
     end
   end
 
-private
+  private
   # Use callbacks to share common setup or constraints between actions.
   def set_post
     @post = Post.find(params[:id])
   end
 
   def post_params
-    params.require(:post).permit(:title)
+    params.require(:post).permit(:title).to_h # 戻り値を Hash型 に変換
   end
 end
